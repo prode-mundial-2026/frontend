@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box, Card, CardContent, TextField, Button, Typography,
-  Divider, Alert, CircularProgress,
+  Alert, CircularProgress,
 } from '@mui/material';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import { useAuth } from '../context/AuthContext';
-
-const GOOGLE_AUTH_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/auth/google`;
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -85,24 +83,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <Divider sx={{ my: 3 }}>o</Divider>
-
-          <Button
-            variant="outlined"
-            fullWidth
-            size="large"
-            href={GOOGLE_AUTH_URL}
-            startIcon={
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                width={20}
-              />
-            }
-          >
-            Continuar con Google
-          </Button>
-
           <Typography sx={{ mt: 3, textAlign: 'center' }}>
             ¿No tenés cuenta?{' '}
             <RouterLink to="/register" style={{ color: '#42A5F5' }}>
@@ -110,8 +90,7 @@ export default function LoginPage() {
             </RouterLink>
           </Typography>
 
-          <Divider sx={{ my: 2 }} />
-          <Typography sx={{ textAlign: 'center' }}>
+          <Typography sx={{ mt: 2, textAlign: 'center' }}>
             <RouterLink to="/ranking" style={{ color: '#FFD600' }}>
               Ver ranking público →
             </RouterLink>
