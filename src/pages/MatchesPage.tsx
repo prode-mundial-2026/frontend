@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, Chip, Tab, Tabs,
   Skeleton, Alert, Button, TextField, Dialog, DialogTitle,
-  DialogContent, DialogActions,
+  DialogContent, DialogActions, ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import LockIcon from '@mui/icons-material/Lock';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import api from '../api/client';
 
 interface Team {
@@ -292,12 +294,20 @@ function PredictDialog({
   );
 }
 
+const GROUP_LABELS: Record<string, string> = {
+  GROUP_A: 'Grupo A', GROUP_B: 'Grupo B', GROUP_C: 'Grupo C', GROUP_D: 'Grupo D',
+  GROUP_E: 'Grupo E', GROUP_F: 'Grupo F', GROUP_G: 'Grupo G', GROUP_H: 'Grupo H',
+  GROUP_I: 'Grupo I', GROUP_J: 'Grupo J', GROUP_K: 'Grupo K', GROUP_L: 'Grupo L',
+};
+
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stageTab, setStageTab] = useState(0);
+  const [groupFilter, setGroupFilter] = useState<string>('ALL');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [predictMatch, setPredictMatch] = useState<Match | null>(null);
 
   useEffect(() => {
@@ -328,9 +338,23 @@ export default function MatchesPage() {
   // Tabs: "Todos" + cada stage presente
   const tabs = ['ALL', ...presentStages];
 
-  const filteredMatches = stageTab === 0
+  const stageFiltered = stageTab === 0
     ? matches
     : matches.filter((m) => m.stage === tabs[stageTab]);
+
+  // Grupos disponibles en la vista actual
+  const presentGroups = Array.from(
+    new Set(stageFiltered.map((m) => m.group).filter(Boolean))
+  ).sort();
+
+  const showGroupFilter = presentGroups.length > 0;
+
+  const filteredMatches = stageFiltered
+    .filter((m) => groupFilter === 'ALL' || m.group === groupFilter)
+    .sort((a, b) => {
+      const diff = new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime();
+      return sortOrder === 'asc' ? diff : -diff;
+    });
 
   // Agrupar por matchday/fecha dentro de la vista actual
   const groupedMatches = filteredMatches.reduce<Record<string, Match[]>>((acc, m) => {
@@ -364,7 +388,7 @@ export default function MatchesPage() {
 
       <Tabs
         value={stageTab}
-        onChange={(_, v) => setStageTab(v)}
+        onChange={(_, v) => { setStageTab(v); setGroupFilter('ALL'); }}
         variant="scrollable"
         scrollButtons="auto"
         sx={{ mb: 2 }}
@@ -373,6 +397,39 @@ export default function MatchesPage() {
           <Tab key={s} label={s === 'ALL' ? 'Todos' : (STAGE_LABELS[s] || s)} value={i} />
         ))}
       </Tabs>
+
+      {/* Filtros de grupo y orden */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1, flexWrap: 'wrap' }}>
+        {showGroupFilter && (
+          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+            <Chip
+              label="Todos"
+              size="small"
+              color={groupFilter === 'ALL' ? 'primary' : 'default'}
+              onClick={() => setGroupFilter('ALL')}
+            />
+            {presentGroups.map((g) => (
+              <Chip
+                key={g}
+                label={GROUP_LABELS[g] || g}
+                size="small"
+                color={groupFilter === g ? 'primary' : 'default'}
+                onClick={() => setGroupFilter(g)}
+              />
+            ))}
+          </Box>
+        )}
+        <ToggleButtonGroup
+          value={sortOrder}
+          exclusive
+          onChange={(_, v) => v && setSortOrder(v)}
+          size="small"
+          sx={{ ml: 'auto' }}
+        >
+          <ToggleButton value="asc"><ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />Fecha</ToggleButton>
+          <ToggleButton value="desc"><ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5 }} />Fecha</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
       {loading ? (
         Array.from({ length: 5 }).map((_, i) => (
