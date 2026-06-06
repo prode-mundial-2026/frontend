@@ -31,7 +31,7 @@ export default function Layout() {
         <Toolbar>
           <SportsSoccerIcon sx={{ mr: 1, color: 'secondary.main' }} />
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            Alto Fixture
+            Prode Mundial 2026 por Santi Lapiana (y Claude)
           </Typography>
 
           {user && (

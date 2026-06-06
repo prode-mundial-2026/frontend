@@ -47,8 +47,8 @@ export default function LoginPage() {
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <SportsSoccerIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 1 }} />
-            <Typography variant="h4" gutterBottom>Alto Fixture</Typography>
-            <Typography color="text.secondary">Prode Mundial 2026</Typography>
+            <Typography variant="h4" gutterBottom>Prode Mundial 2026</Typography>
+            <Typography color="text.secondary">por Santi Lapiana (y Claude)</Typography>
           </Box>
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}

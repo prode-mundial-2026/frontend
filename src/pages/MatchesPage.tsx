@@ -378,11 +378,41 @@ export default function MatchesPage() {
     });
   };
 
+  const availableMatches = matches.filter((m) =>
+    teamsConfirmed(m) &&
+    (m.status === 'SCHEDULED' || m.status === 'TIMED') &&
+    new Date(m.utcDate).getTime() - Date.now() > 5 * 60 * 1000
+  );
+  const completedPredictions = predictions.length;
+  const availableCount = availableMatches.filter((m) => !predictionMap[m.id]).length;
+
   return (
     <Box maxWidth={700} mx="auto">
-      <Typography variant="h5" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <SportsSoccerIcon color="secondary" /> Partidos
-      </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 800, letterSpacing: '-0.5px' }}>
+          <SportsSoccerIcon color="secondary" /> Partidos
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, mt: 1.5 }}>
+          <Box sx={{
+            px: 2, py: 1, borderRadius: 2,
+            bgcolor: 'rgba(255,214,0,0.08)',
+            border: '1px solid rgba(255,214,0,0.2)',
+            display: 'flex', alignItems: 'center', gap: 1,
+          }}>
+            <Typography variant="h6" fontWeight={700} color="secondary.main">{completedPredictions}</Typography>
+            <Typography variant="caption" color="text.secondary" lineHeight={1.2}>pronósticos<br />realizados</Typography>
+          </Box>
+          <Box sx={{
+            px: 2, py: 1, borderRadius: 2,
+            bgcolor: availableCount > 0 ? 'rgba(21,101,192,0.12)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${availableCount > 0 ? 'rgba(66,165,245,0.3)' : 'rgba(255,255,255,0.08)'}`,
+            display: 'flex', alignItems: 'center', gap: 1,
+          }}>
+            <Typography variant="h6" fontWeight={700} color={availableCount > 0 ? 'primary.light' : 'text.disabled'}>{availableCount}</Typography>
+            <Typography variant="caption" color="text.secondary" lineHeight={1.2}>disponibles<br />para pronosticar</Typography>
+          </Box>
+        </Box>
+      </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
@@ -399,36 +429,60 @@ export default function MatchesPage() {
       </Tabs>
 
       {/* Filtros de grupo y orden */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ mb: 2.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {showGroupFilter && (
-          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-            <Chip
-              label="Todos"
-              size="small"
-              color={groupFilter === 'ALL' ? 'primary' : 'default'}
-              onClick={() => setGroupFilter('ALL')}
-            />
-            {presentGroups.map((g) => (
+          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography variant="caption" color="text.disabled" sx={{ mr: 0.5, fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>Grupo</Typography>
+            {(['ALL', ...presentGroups] as string[]).map((g) => (
               <Chip
                 key={g}
-                label={GROUP_LABELS[g] || g}
+                label={g === 'ALL' ? 'Todos' : (GROUP_LABELS[g] || g)}
                 size="small"
-                color={groupFilter === g ? 'primary' : 'default'}
                 onClick={() => setGroupFilter(g)}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                  borderRadius: '8px',
+                  border: '1px solid',
+                  borderColor: groupFilter === g ? 'primary.main' : 'rgba(255,255,255,0.1)',
+                  bgcolor: groupFilter === g ? 'rgba(21,101,192,0.25)' : 'transparent',
+                  color: groupFilter === g ? 'primary.light' : 'text.secondary',
+                  '&:hover': { bgcolor: 'rgba(21,101,192,0.15)', borderColor: 'primary.light' },
+                  transition: 'all 0.15s',
+                }}
               />
             ))}
           </Box>
         )}
-        <ToggleButtonGroup
-          value={sortOrder}
-          exclusive
-          onChange={(_, v) => v && setSortOrder(v)}
-          size="small"
-          sx={{ ml: 'auto' }}
-        >
-          <ToggleButton value="asc"><ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />Fecha</ToggleButton>
-          <ToggleButton value="desc"><ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5 }} />Fecha</ToggleButton>
-        </ToggleButtonGroup>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, letterSpacing: 1, textTransform: 'uppercase' }}>Orden</Typography>
+          <ToggleButtonGroup
+            value={sortOrder}
+            exclusive
+            onChange={(_, v) => v && setSortOrder(v)}
+            size="small"
+            sx={{
+              '& .MuiToggleButton-root': {
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'text.secondary',
+                fontWeight: 600,
+                fontSize: '0.72rem',
+                px: 1.5,
+                py: 0.5,
+                gap: 0.5,
+                textTransform: 'none',
+                '&.Mui-selected': {
+                  bgcolor: 'rgba(21,101,192,0.25)',
+                  color: 'primary.light',
+                  borderColor: 'primary.main',
+                },
+              },
+            }}
+          >
+            <ToggleButton value="asc"><ArrowUpwardIcon sx={{ fontSize: 14 }} />Más próximos</ToggleButton>
+            <ToggleButton value="desc"><ArrowDownwardIcon sx={{ fontSize: 14 }} />Más lejanos</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
       </Box>
 
       {loading ? (
