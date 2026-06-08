@@ -83,7 +83,13 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <Typography sx={{ mt: 3, textAlign: 'center' }}>
+          <Typography sx={{ mt: 2, textAlign: 'center' }}>
+            <RouterLink to="/forgot-password" style={{ color: '#90CAF9', fontSize: '0.875rem' }}>
+              ¿Olvidaste tu contraseña?
+            </RouterLink>
+          </Typography>
+
+          <Typography sx={{ mt: 2, textAlign: 'center' }}>
             ¿No tenés cuenta?{' '}
             <RouterLink to="/register" style={{ color: '#42A5F5' }}>
               Registrate
