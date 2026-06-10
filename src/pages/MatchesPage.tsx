@@ -124,7 +124,7 @@ function MatchCard({
   const confirmed = teamsConfirmed(match);
   const canPredict = confirmed &&
     (match.status === 'SCHEDULED' || match.status === 'TIMED') &&
-    matchDate.getTime() - Date.now() > 5 * 60 * 1000;
+    matchDate.getTime() - Date.now() > 15 * 60 * 1000;
 
   return (
     <Card sx={{ mb: 1.5, opacity: confirmed ? 1 : 0.75 }}>
@@ -381,7 +381,7 @@ export default function MatchesPage() {
   const availableMatches = matches.filter((m) =>
     teamsConfirmed(m) &&
     (m.status === 'SCHEDULED' || m.status === 'TIMED') &&
-    new Date(m.utcDate).getTime() - Date.now() > 5 * 60 * 1000
+    new Date(m.utcDate).getTime() - Date.now() > 15 * 60 * 1000
   );
   const completedPredictions = predictions.length;
   const availableCount = availableMatches.filter((m) => !predictionMap[m.id]).length;

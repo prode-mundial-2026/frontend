@@ -11,6 +11,7 @@ import MyPredictionsPage from './pages/MyPredictionsPage';
 import RankingPage from './pages/RankingPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import BracketPredictionPage from './pages/BracketPredictionPage';
+import HomePage from './pages/HomePage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,9 @@ export default function App() {
         <Route path="/ranking" element={<RankingPage />} />
 
         {/* Privadas */}
+        <Route path="/home" element={
+          <PrivateRoute><HomePage /></PrivateRoute>
+        } />
         <Route path="/matches" element={
           <PrivateRoute><MatchesPage /></PrivateRoute>
         } />
@@ -47,7 +51,7 @@ export default function App() {
           <PrivateRoute><BracketPredictionPage /></PrivateRoute>
         } />
 
-        <Route path="/" element={<Navigate to="/matches" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>
   );

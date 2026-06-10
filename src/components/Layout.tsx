@@ -10,7 +10,10 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+import HomeIcon from '@mui/icons-material/Home';
+
 const NAV_ITEMS = [
+  { label: 'Hoy', icon: <HomeIcon />, path: '/home' },
   { label: 'Partidos', icon: <SportsSoccerIcon />, path: '/matches' },
   { label: 'Mis Pronósticos', icon: <AssignmentIcon />, path: '/mis-predicciones' },
   { label: 'Llaves', icon: <EmojiEventsIcon />, path: '/llaves' },
