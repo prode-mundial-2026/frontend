@@ -29,13 +29,19 @@ interface Prediction {
 }
 
 function PredictionCard({ pred }: { pred: Prediction }) {
-  const isFinished = pred.match_status === 'FINISHED' && pred.scored_at;
-  const isExact = pred.points_earned === 30;
-  const isCorrect = pred.points_earned === 10;
+  const isFinished = !!(pred.match_status === 'FINISHED' && pred.scored_at);
+  const isExact = isFinished && pred.points_earned === 30;
+  const isCorrect = isFinished && pred.points_earned === 10;
   const isWrong = isFinished && pred.points_earned === 0;
 
+  let cardBorder = '1px solid rgba(255,255,255,0.06)';
+  let cardBg = 'transparent';
+  if (isExact)        { cardBorder = '1px solid rgba(76,175,80,0.6)';  cardBg = 'rgba(76,175,80,0.08)'; }
+  else if (isCorrect) { cardBorder = '1px solid rgba(76,175,80,0.35)'; cardBg = 'rgba(76,175,80,0.05)'; }
+  else if (isWrong)   { cardBorder = '1px solid rgba(244,67,54,0.4)';  cardBg = 'rgba(244,67,54,0.06)'; }
+
   return (
-    <Card sx={{ mb: 1.5, borderLeft: `4px solid ${isExact ? '#FFD600' : isCorrect ? '#2E7D32' : isWrong ? '#C62828' : 'transparent'}` }}>
+    <Card sx={{ mb: 1.5, border: cardBorder, bgcolor: cardBg, transition: 'border-color 0.3s, background-color 0.3s' }}>
       <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Typography variant="caption" color="text.secondary">
@@ -45,14 +51,24 @@ function PredictionCard({ pred }: { pred: Prediction }) {
             })}
           </Typography>
 
-          {isFinished && (
-            <Chip
-              icon={isExact ? <StarIcon /> : isCorrect ? <CheckCircleIcon /> : <CancelIcon />}
-              label={isExact ? '+30 pts' : isCorrect ? '+10 pts' : '0 pts'}
-              size="small"
-              color={isExact ? 'warning' : isCorrect ? 'success' : 'error'}
-            />
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            {isExact && (
+              <Chip
+                icon={<StarIcon sx={{ fontSize: '13px !important' }} />}
+                label="¡Exacto!"
+                size="small"
+                sx={{ bgcolor: 'rgba(76,175,80,0.2)', border: '1px solid rgba(76,175,80,0.5)', color: 'success.light', fontWeight: 700, fontSize: '0.68rem', '& .MuiChip-icon': { color: 'success.light' } }}
+              />
+            )}
+            {isFinished && (
+              <Chip
+                icon={isExact ? <CheckCircleIcon /> : isCorrect ? <CheckCircleIcon /> : <CancelIcon />}
+                label={isExact ? '+30 pts' : isCorrect ? '+10 pts' : '0 pts'}
+                size="small"
+                color={isExact || isCorrect ? 'success' : 'error'}
+              />
+            )}
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1, gap: 1 }}>
@@ -66,7 +82,15 @@ function PredictionCard({ pred }: { pred: Prediction }) {
           </Box>
 
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body1" fontWeight={700} color="secondary.main">
+            <Typography
+              variant="body1"
+              fontWeight={700}
+              color={isExact ? 'success.light' : isCorrect ? 'success.light' : isWrong ? 'error.light' : 'secondary.main'}
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
+            >
+              {isExact && <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />}
+              {isCorrect && <CheckCircleIcon sx={{ fontSize: 16, color: 'success.dark' }} />}
+              {isWrong && <CancelIcon sx={{ fontSize: 16, color: 'error.main' }} />}
               {pred.predicted_home_score} – {pred.predicted_away_score}
             </Typography>
             {isFinished && (

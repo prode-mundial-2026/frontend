@@ -8,7 +8,18 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import LockIcon from '@mui/icons-material/Lock';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import StarIcon from '@mui/icons-material/Star';
 import api from '../api/client';
+
+/** Convierte un marcador en resultado: 'home' | 'draw' | 'away' | null */
+function getResult(home: number | null, away: number | null): 'home' | 'draw' | 'away' | null {
+  if (home === null || away === null) return null;
+  if (home > away) return 'home';
+  if (home < away) return 'away';
+  return 'draw';
+}
 
 interface Team {
   id: number | null;
@@ -122,12 +133,32 @@ function MatchCard({
 }) {
   const matchDate = new Date(match.utcDate);
   const confirmed = teamsConfirmed(match);
+  const isFinished = match.status === 'FINISHED';
+  const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
   const canPredict = confirmed &&
     (match.status === 'SCHEDULED' || match.status === 'TIMED') &&
     matchDate.getTime() - Date.now() > 15 * 60 * 1000;
 
+  const isExact =
+    isFinished && prediction !== undefined &&
+    prediction.predicted_home_score === match.score.home &&
+    prediction.predicted_away_score === match.score.away;
+
+  const isCorrect =
+    !isExact && isFinished && prediction !== undefined &&
+    getResult(prediction.predicted_home_score, prediction.predicted_away_score) ===
+      getResult(match.score.home, match.score.away);
+
+  const isWrong = isFinished && prediction !== undefined && !isExact && !isCorrect;
+
+  let cardBorder = isLive ? '1px solid rgba(255,167,38,0.4)' : '1px solid rgba(255,255,255,0.06)';
+  let cardBg = 'transparent';
+  if (isExact)        { cardBorder = '1px solid rgba(76,175,80,0.6)';  cardBg = 'rgba(76,175,80,0.08)'; }
+  else if (isCorrect) { cardBorder = '1px solid rgba(76,175,80,0.35)'; cardBg = 'rgba(76,175,80,0.05)'; }
+  else if (isWrong)   { cardBorder = '1px solid rgba(244,67,54,0.4)';  cardBg = 'rgba(244,67,54,0.06)'; }
+
   return (
-    <Card sx={{ mb: 1.5, opacity: confirmed ? 1 : 0.75 }}>
+    <Card sx={{ mb: 1.5, opacity: confirmed ? 1 : 0.75, border: cardBorder, bgcolor: cardBg, transition: 'border-color 0.3s, background-color 0.3s' }}>
       <CardContent sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="caption" color="text.secondary">
@@ -137,30 +168,34 @@ function MatchCard({
             })}
             {match.venue ? ` · ${match.venue}` : ''}
           </Typography>
-          {confirmed ? (
-            <Chip
-              label={STATUS_LABELS[match.status] || match.status}
-              color={STATUS_COLORS[match.status] || 'default'}
-              size="small"
-            />
-          ) : (
-            <Chip label="Equipos por definir" size="small" variant="outlined" />
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            {isExact && (
+              <Chip
+                icon={<StarIcon sx={{ fontSize: '13px !important' }} />}
+                label="¡Exacto!"
+                size="small"
+                sx={{ bgcolor: 'rgba(76,175,80,0.2)', border: '1px solid rgba(76,175,80,0.5)', color: 'success.light', fontWeight: 700, fontSize: '0.68rem', '& .MuiChip-icon': { color: 'success.light' } }}
+              />
+            )}
+            {confirmed ? (
+              <Chip label={STATUS_LABELS[match.status] || match.status} color={STATUS_COLORS[match.status] || 'default'} size="small" />
+            ) : (
+              <Chip label="Equipos por definir" size="small" variant="outlined" />
+            )}
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
           <TeamDisplay team={match.homeTeam} />
-
           <Box sx={{ textAlign: 'center', minWidth: 60 }}>
-            {confirmed && (match.status === 'FINISHED' || match.status === 'IN_PLAY' || match.status === 'PAUSED') ? (
-              <Typography variant="h5" fontWeight={700} color="secondary.main">
+            {confirmed && (isFinished || isLive) ? (
+              <Typography variant="h5" fontWeight={700} color={isLive ? 'warning.main' : 'secondary.main'}>
                 {match.score.home ?? '?'} — {match.score.away ?? '?'}
               </Typography>
             ) : (
               <Typography variant="h6" color="text.secondary">vs</Typography>
             )}
           </Box>
-
           <TeamDisplay team={match.awayTeam} />
         </Box>
 
@@ -169,8 +204,19 @@ function MatchCard({
             <Chip
               label={`Tu pronóstico: ${prediction.predicted_home_score} — ${prediction.predicted_away_score}`}
               size="small"
-              color="primary"
               variant="outlined"
+              sx={
+                isExact   ? { borderColor: 'success.main', color: 'success.light', fontWeight: 700 }
+                : isCorrect ? { borderColor: 'success.dark', color: 'success.light' }
+                : isWrong   ? { borderColor: 'error.dark',   color: 'error.light' }
+                : { borderColor: 'primary.main', color: 'primary.light' }
+              }
+              icon={
+                isExact   ? <CheckCircleIcon sx={{ fontSize: '14px !important', color: 'success.main !important' }} />
+                : isCorrect ? <CheckCircleIcon sx={{ fontSize: '14px !important', color: 'success.dark !important' }} />
+                : isWrong   ? <CancelIcon     sx={{ fontSize: '14px !important', color: 'error.main !important'   }} />
+                : undefined
+              }
             />
           ) : (
             <Box />
