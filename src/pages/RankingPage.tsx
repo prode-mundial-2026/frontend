@@ -89,7 +89,10 @@ export default function RankingPage() {
               <TableCell>#</TableCell>
               <TableCell>Jugador</TableCell>
               <TableCell align="right">Pts</TableCell>
-              <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Exactos</TableCell>
+              <TableCell align="right">
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>⚡ Exactos</Box>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>⚡</Box>
+              </TableCell>
               <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Resultados</TableCell>
             </TableRow>
           </TableHead>
@@ -125,7 +128,7 @@ export default function RankingPage() {
                         >
                           {entry.username[0].toUpperCase()}
                         </Avatar>
-                        <Typography variant="body2" fontWeight={entry.id === user?.id ? 700 : 400}>
+                        <Typography variant="body2" fontWeight={entry.id === user?.id ? 700 : 400} noWrap>
                           {entry.username}
                           {entry.id === user?.id && (
                             <Chip label="vos" size="small" color="primary" sx={{ ml: 0.5, height: 16 }} />
@@ -138,7 +141,7 @@ export default function RankingPage() {
                         {entry.total_points}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                    <TableCell align="right">
                       ⚡ {entry.exact_results}
                     </TableCell>
                     <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
