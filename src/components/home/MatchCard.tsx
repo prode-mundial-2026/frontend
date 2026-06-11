@@ -126,21 +126,30 @@ export default function MatchCard({ match, prediction, summary, liveData, onPred
             )}
             {confirmed ? (
               isLive ? (
-                /* Badge estilo Google: punto rojo pulsante + minuto */
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    bgcolor: '#f44336',
-                    animation: 'livePulse 1.2s infinite',
-                    '@keyframes livePulse': {
-                      '0%,100%': { opacity: 1, transform: 'scale(1)' },
-                      '50%': { opacity: 0.5, transform: 'scale(0.75)' },
-                    },
-                  }} />
-                  <Typography variant="caption" fontWeight={700} color="#f44336" sx={{ lineHeight: 1 }}>
-                    {minuteLabel ?? 'EN JUEGO'}
-                  </Typography>
-                </Box>
+                <Chip
+                  size="small"
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Box sx={{
+                        width: 7, height: 7, borderRadius: '50%',
+                        bgcolor: '#f44336',
+                        animation: 'livePulse 1.2s infinite',
+                        '@keyframes livePulse': {
+                          '0%,100%': { opacity: 1, transform: 'scale(1)' },
+                          '50%': { opacity: 0.5, transform: 'scale(0.75)' },
+                        },
+                      }} />
+                      <span>{minuteLabel ?? 'EN JUEGO'}</span>
+                    </Box>
+                  }
+                  sx={{
+                    bgcolor: 'rgba(244, 67, 54, 0.15)',
+                    border: '1px solid rgba(244, 67, 54, 0.5)',
+                    color: '#f44336',
+                    fontWeight: 700,
+                    '& .MuiChip-label': { display: 'flex', alignItems: 'center', px: 1 },
+                  }}
+                />
               ) : (
                 <Chip
                   label={STATUS_LABELS[match.status] || match.status}
