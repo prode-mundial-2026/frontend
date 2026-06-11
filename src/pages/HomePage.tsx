@@ -74,9 +74,10 @@ export default function HomePage() {
 
   useEffect(() => { loadData(selectedDate); }, [selectedDate, loadData]);
 
-  // Polling de scores en vivo cada 60s cuando hay partidos en curso
+  // Polling de scores en vivo cada 60s cuando la fecha es hoy (el partido puede estar en curso aunque la BD diga TIMED)
   useEffect(() => {
     const hasLive = matches.some((m) => m.status === 'IN_PLAY' || m.status === 'PAUSED');
+    const isToday = selectedDate === todayArgentina();
 
     const fetchLive = async () => {
       try {
@@ -93,7 +94,7 @@ export default function HomePage() {
 
     if (liveIntervalRef.current) clearInterval(liveIntervalRef.current);
 
-    if (hasLive) {
+    if (hasLive || isToday) {
       fetchLive();
       liveIntervalRef.current = setInterval(fetchLive, 60_000);
     } else {
@@ -103,7 +104,7 @@ export default function HomePage() {
     return () => {
       if (liveIntervalRef.current) clearInterval(liveIntervalRef.current);
     };
-  }, [matches]);
+  }, [matches, selectedDate]);
 
   const predictionMap = Object.fromEntries(predictions.map((p) => [p.match_id, p]));
 

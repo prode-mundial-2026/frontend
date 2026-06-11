@@ -29,8 +29,9 @@ export default function MatchCard({ match, prediction, summary, liveData, onPred
   const locked = isMatchLocked(match);
   const confirmed = match.homeTeam.id !== null && match.awayTeam.id !== null;
   const timeStr = new Date(match.utcDate).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-  const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
-  const isPaused = match.status === 'PAUSED';
+  const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED'
+    || liveData?.status === 'IN_PLAY' || liveData?.status === 'PAUSED';
+  const isPaused = match.status === 'PAUSED' || liveData?.status === 'PAUSED';
   const isFinished = match.status === 'FINISHED';
 
   // Score a mostrar: priorizar datos en vivo de la API
