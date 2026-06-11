@@ -80,9 +80,25 @@ export default function Layout() {
                 onClose={() => setAnchorEl(null)}
               >
                 <MenuItem disabled>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.username}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {user.username}
+                    </Typography>
+                    {user.lucky_team_crest && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <img
+                          src={user.lucky_team_crest}
+                          alt={user.lucky_team_tla}
+                          width={18}
+                          height={18}
+                          style={{ objectFit: 'contain' }}
+                        />
+                        <Typography variant="caption" color="text.disabled">
+                          {user.lucky_team_tla}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
                 </MenuItem>
                 <MenuItem onClick={handleOpenRename}>
                   Cambiar nombre

@@ -6,6 +6,9 @@ interface User {
   email: string;
   username: string;
   avatar_url?: string;
+  lucky_team_tla?: string;
+  lucky_team_crest?: string;
+  lucky_team_name?: string;
 }
 
 interface AuthContextType {

@@ -18,6 +18,9 @@ interface RankEntry {
   correct_results: number;
   total_predictions: number;
   rank: number;
+  lucky_team_tla?: string;
+  lucky_team_crest?: string;
+  lucky_team_name?: string;
 }
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
@@ -128,12 +131,30 @@ export default function RankingPage() {
                         >
                           {entry.username[0].toUpperCase()}
                         </Avatar>
-                        <Typography variant="body2" fontWeight={entry.id === user?.id ? 700 : 400} noWrap>
-                          {entry.username}
-                          {entry.id === user?.id && (
-                            <Chip label="vos" size="small" color="primary" sx={{ ml: 0.5, height: 16 }} />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Typography variant="body2" fontWeight={entry.id === user?.id ? 700 : 400} noWrap>
+                              {entry.username}
+                            </Typography>
+                            {entry.id === user?.id && (
+                              <Chip label="vos" size="small" color="primary" sx={{ height: 16 }} />
+                            )}
+                          </Box>
+                          {entry.lucky_team_crest && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                              <img
+                                src={entry.lucky_team_crest}
+                                alt={entry.lucky_team_tla}
+                                width={14}
+                                height={14}
+                                style={{ objectFit: 'contain' }}
+                              />
+                              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.6rem' }}>
+                                {entry.lucky_team_tla}
+                              </Typography>
+                            </Box>
                           )}
-                        </Typography>
+                        </Box>
                       </Box>
                     </TableCell>
                     <TableCell align="right">
