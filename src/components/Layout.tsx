@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar, Toolbar, Typography, Box, BottomNavigation,
   BottomNavigationAction, Avatar, IconButton, Menu, MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Alert,
 } from '@mui/material';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
@@ -23,10 +24,35 @@ const NAV_ITEMS = [
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUsername } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [renameError, setRenameError] = useState('');
+  const [renameLoading, setRenameLoading] = useState(false);
 
   const currentTab = NAV_ITEMS.findIndex((item) => location.pathname.startsWith(item.path));
+
+  const handleOpenRename = () => {
+    setAnchorEl(null);
+    setNewName(user?.username ?? '');
+    setRenameError('');
+    setRenameOpen(true);
+  };
+
+  const handleRename = async () => {
+    setRenameLoading(true);
+    setRenameError('');
+    try {
+      await updateUsername(newName.trim());
+      setRenameOpen(false);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      setRenameError(msg || 'Error al actualizar el nombre');
+    } finally {
+      setRenameLoading(false);
+    }
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -57,6 +83,9 @@ export default function Layout() {
                   <Typography variant="body2" color="text.secondary">
                     {user.username}
                   </Typography>
+                </MenuItem>
+                <MenuItem onClick={handleOpenRename}>
+                  Cambiar nombre
                 </MenuItem>
                 <MenuItem onClick={() => { setAnchorEl(null); logout(); navigate('/login'); }}>
                   Cerrar sesión
@@ -90,6 +119,33 @@ export default function Layout() {
           />
         ))}
       </BottomNavigation>
+
+      <Dialog open={renameOpen} onClose={() => setRenameOpen(false)} fullWidth maxWidth="xs">
+        <DialogTitle>Cambiar nombre de perfil</DialogTitle>
+        <DialogContent>
+          {renameError && <Alert severity="error" sx={{ mb: 2 }}>{renameError}</Alert>}
+          <TextField
+            autoFocus
+            fullWidth
+            label="Nuevo nombre"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onFocus={(e) => e.target.select()}
+            inputProps={{ maxLength: 30 }}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameOpen(false)}>Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={handleRename}
+            disabled={renameLoading || newName.trim().length < 3}
+          >
+            {renameLoading ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
