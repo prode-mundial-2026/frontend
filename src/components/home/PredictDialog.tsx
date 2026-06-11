@@ -65,14 +65,15 @@ export default function PredictDialog({ match, existing, open, onClose, onSaved 
                 )}
                 <Typography variant="body2" fontWeight={600}>{match[side].tla}</Typography>
                 <TextField
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={side === 'homeTeam' ? home : away}
                   onChange={(e) => {
                     const v = Math.max(0, parseInt(e.target.value) || 0);
                     side === 'homeTeam' ? setHome(v) : setAway(v);
                   }}
                   onFocus={(e) => e.target.select()}
-                  inputProps={{ min: 0, max: 30, style: { textAlign: 'center', fontSize: 24, width: 60 } }}
+                  inputProps={{ style: { textAlign: 'center', fontSize: 24, width: 60 } }}
                   sx={{ mt: 1 }}
                 />
               </Box>
