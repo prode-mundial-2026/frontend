@@ -22,7 +22,7 @@ export default function AuthCallbackPage() {
     api.get('/auth/me')
       .then((res) => {
         setTokenAndUser(token, res.data.user);
-        navigate('/matches');
+        navigate('/home');
       })
       .catch(() => navigate('/login?error=google_failed'));
   }, []);
