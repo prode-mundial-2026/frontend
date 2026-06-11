@@ -8,6 +8,7 @@ export interface Team {
 
 export interface Match {
   id: number;
+  externalId?: number;
   utcDate: string;
   status: string;
   stage: string;
@@ -16,6 +17,14 @@ export interface Match {
   venue: string | null;
   homeTeam: Team;
   awayTeam: Team;
+  score: { home: number | null; away: number | null };
+}
+
+export interface LiveMatchData {
+  externalId: number;
+  status: string;
+  minute: number | null;
+  injuryTime: number | null;
   score: { home: number | null; away: number | null };
 }
 

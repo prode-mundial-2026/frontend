@@ -3,7 +3,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import StarIcon from '@mui/icons-material/Star';
-import { Match, Prediction, PredictionSummary } from './types';
+import { Match, Prediction, PredictionSummary, LiveMatchData } from './types';
 import { isMatchLocked, STATUS_LABELS, STATUS_COLORS } from './matchUtils';
 import TeamMini from './TeamMini';
 import PredictionBar from './PredictionBar';
@@ -12,6 +12,7 @@ interface Props {
   match: Match;
   prediction?: Prediction;
   summary?: PredictionSummary;
+  liveData?: LiveMatchData;
   onPredict: (m: Match) => void;
   onViewOthers: (m: Match) => void;
 }
@@ -24,12 +25,24 @@ function getResult(home: number | null, away: number | null): 'home' | 'draw' | 
   return 'draw';
 }
 
-export default function MatchCard({ match, prediction, summary, onPredict, onViewOthers }: Props) {
+export default function MatchCard({ match, prediction, summary, liveData, onPredict, onViewOthers }: Props) {
   const locked = isMatchLocked(match);
   const confirmed = match.homeTeam.id !== null && match.awayTeam.id !== null;
   const timeStr = new Date(match.utcDate).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
+  const isPaused = match.status === 'PAUSED';
   const isFinished = match.status === 'FINISHED';
+
+  // Score a mostrar: priorizar datos en vivo de la API
+  const displayScore = liveData?.score ?? match.score;
+
+  // Minuto: solo si hay datos en vivo
+  const minute = liveData?.minute ?? null;
+  const injuryTime = liveData?.injuryTime ?? null;
+  const minuteLabel = minute !== null
+    ? injuryTime ? `${minute}+${injuryTime}'` : `${minute}'`
+    : isPaused ? 'ET'
+    : null;
 
   // Feedback visual solo para partidos finalizados con pronóstico
   const isExact =
@@ -100,15 +113,29 @@ export default function MatchCard({ match, prediction, summary, onPredict, onVie
               />
             )}
             {confirmed ? (
-              <Chip
-                label={STATUS_LABELS[match.status] || match.status}
-                color={STATUS_COLORS[match.status] || 'default'}
-                size="small"
-                sx={isLive ? {
-                  animation: 'pulse 1.5s infinite',
-                  '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.6 } },
-                } : {}}
-              />
+              isLive ? (
+                /* Badge estilo Google: punto rojo pulsante + minuto */
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    bgcolor: '#f44336',
+                    animation: 'livePulse 1.2s infinite',
+                    '@keyframes livePulse': {
+                      '0%,100%': { opacity: 1, transform: 'scale(1)' },
+                      '50%': { opacity: 0.5, transform: 'scale(0.75)' },
+                    },
+                  }} />
+                  <Typography variant="caption" fontWeight={700} color="#f44336" sx={{ lineHeight: 1 }}>
+                    {minuteLabel ?? (isPaused ? 'ET' : 'EN JUEGO')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Chip
+                  label={STATUS_LABELS[match.status] || match.status}
+                  color={STATUS_COLORS[match.status] || 'default'}
+                  size="small"
+                />
+              )
             ) : (
               <Chip label="Equipos por definir" size="small" variant="outlined" />
             )}
@@ -121,7 +148,7 @@ export default function MatchCard({ match, prediction, summary, onPredict, onVie
           <Box sx={{ textAlign: 'center', minWidth: 56 }}>
             {confirmed && (isLive || isFinished) ? (
               <Typography variant="h5" fontWeight={700} color={isLive ? 'warning.main' : 'secondary.main'}>
-                {match.score.home ?? '?'} — {match.score.away ?? '?'}
+                {displayScore.home ?? '?'} — {displayScore.away ?? '?'}
               </Typography>
             ) : (
               <Typography variant="h6" color="text.secondary">vs</Typography>

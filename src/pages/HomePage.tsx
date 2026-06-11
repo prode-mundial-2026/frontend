@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Box, Typography, TextField, Alert, Skeleton, Chip, Divider, IconButton, Button,
 } from '@mui/material';
@@ -6,7 +6,7 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import api from '../api/client';
-import { Match, Prediction, PredictionSummary, DailyStats } from '../components/home/types';
+import { Match, Prediction, PredictionSummary, DailyStats, LiveMatchData } from '../components/home/types';
 import { todayArgentina, addDays, formatDateLabel } from '../components/home/dateUtils';
 import { isMatchLocked } from '../components/home/matchUtils';
 import MatchCard from '../components/home/MatchCard';
@@ -28,6 +28,9 @@ export default function HomePage() {
   const [predictMatch, setPredictMatch] = useState<Match | null>(null);
   const [othersMatch, setOthersMatch] = useState<Match | null>(null);
   const [othersOpen, setOthersOpen] = useState(false);
+  // Live scores: keyed by externalId
+  const [liveScores, setLiveScores] = useState<Record<number, LiveMatchData>>({});
+  const liveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadData = useCallback(async (date: string) => {
     setLoading(true);
@@ -70,6 +73,37 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => { loadData(selectedDate); }, [selectedDate, loadData]);
+
+  // Polling de scores en vivo cada 60s cuando hay partidos en curso
+  useEffect(() => {
+    const hasLive = matches.some((m) => m.status === 'IN_PLAY' || m.status === 'PAUSED');
+
+    const fetchLive = async () => {
+      try {
+        const res = await api.get('/matches/live');
+        const map: Record<number, LiveMatchData> = {};
+        for (const lm of res.data.liveMatches as LiveMatchData[]) {
+          map[lm.externalId] = lm;
+        }
+        setLiveScores(map);
+      } catch {
+        // silencioso
+      }
+    };
+
+    if (liveIntervalRef.current) clearInterval(liveIntervalRef.current);
+
+    if (hasLive) {
+      fetchLive();
+      liveIntervalRef.current = setInterval(fetchLive, 60_000);
+    } else {
+      setLiveScores({});
+    }
+
+    return () => {
+      if (liveIntervalRef.current) clearInterval(liveIntervalRef.current);
+    };
+  }, [matches]);
 
   const predictionMap = Object.fromEntries(predictions.map((p) => [p.match_id, p]));
 
@@ -170,6 +204,7 @@ export default function HomePage() {
               match={match}
               prediction={predictionMap[match.id]}
               summary={summaries[match.id]}
+              liveData={match.externalId !== undefined ? liveScores[match.externalId] : undefined}
               onPredict={setPredictMatch}
               onViewOthers={(m) => { setOthersMatch(m); setOthersOpen(true); }}
             />

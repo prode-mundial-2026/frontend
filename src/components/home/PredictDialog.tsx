@@ -53,16 +53,18 @@ export default function PredictDialog({ match, existing, open, onClose, onSaved 
       <DialogTitle>Pronosticar partido</DialogTitle>
       <DialogContent>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1, justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, mt: 1, justifyContent: 'center' }}>
           {(['homeTeam', 'awayTeam'] as const).map((side, i) => (
             <>
               {i === 1 && (
-                <Typography key="sep" variant="h5" color="text.secondary" sx={{ mt: 3 }}>—</Typography>
+                <Typography key="sep" variant="h5" color="text.secondary" sx={{ mb: 1.5 }}>—</Typography>
               )}
               <Box key={side} sx={{ textAlign: 'center' }}>
-                {match[side].crest && (
-                  <img src={match[side].crest!} alt="" width={40} style={{ objectFit: 'contain' }} />
-                )}
+                <Box sx={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {match[side].crest && (
+                    <img src={match[side].crest!} alt="" width={40} height={40} style={{ objectFit: 'contain' }} />
+                  )}
+                </Box>
                 <Typography variant="body2" fontWeight={600}>{match[side].tla}</Typography>
                 <TextField
                   type="text"
