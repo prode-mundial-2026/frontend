@@ -36,13 +36,25 @@ export default function MatchCard({ match, prediction, summary, liveData, onPred
   // Score a mostrar: priorizar datos en vivo de la API
   const displayScore = liveData?.score ?? match.score;
 
-  // Minuto: solo si hay datos en vivo
+  // Minuto: usar dato real de la API si existe, si no calcular aprox. desde utcDate
   const minute = liveData?.minute ?? null;
   const injuryTime = liveData?.injuryTime ?? null;
-  const minuteLabel = minute !== null
-    ? injuryTime ? `${minute}+${injuryTime}'` : `${minute}'`
-    : isPaused ? 'ET'
-    : null;
+
+  const approxMinute = (() => {
+    if (!isLive || isPaused) return null;
+    const elapsed = Math.floor((Date.now() - new Date(match.utcDate).getTime()) / 60_000);
+    if (elapsed <= 45) return Math.min(elapsed, 45);
+    // Segunda mitad: asume ~15 min de entretiempo
+    return Math.min(45 + Math.max(0, elapsed - 60), 90);
+  })();
+
+  const minuteLabel = isPaused
+    ? 'ET'
+    : minute !== null
+      ? injuryTime ? `${minute}+${injuryTime}'` : `${minute}'`
+      : approxMinute !== null
+        ? `~${approxMinute}'`
+        : null;
 
   // Feedback visual solo para partidos finalizados con pronóstico
   const isExact =
@@ -126,7 +138,7 @@ export default function MatchCard({ match, prediction, summary, liveData, onPred
                     },
                   }} />
                   <Typography variant="caption" fontWeight={700} color="#f44336" sx={{ lineHeight: 1 }}>
-                    {minuteLabel ?? (isPaused ? 'ET' : 'EN JUEGO')}
+                    {minuteLabel ?? 'EN JUEGO'}
                   </Typography>
                 </Box>
               ) : (
