@@ -71,6 +71,7 @@ export default function PredictDialog({ match, existing, open, onClose, onSaved 
                     const v = Math.max(0, parseInt(e.target.value) || 0);
                     side === 'homeTeam' ? setHome(v) : setAway(v);
                   }}
+                  onFocus={(e) => e.target.select()}
                   inputProps={{ min: 0, max: 30, style: { textAlign: 'center', fontSize: 24, width: 60 } }}
                   sx={{ mt: 1 }}
                 />
