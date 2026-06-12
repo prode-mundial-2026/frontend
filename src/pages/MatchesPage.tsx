@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   Box, Typography, Card, CardContent, Grid, Chip, Tab, Tabs,
-  Skeleton, Alert, Button, TextField, Dialog, DialogTitle,
-  DialogContent, DialogActions, ToggleButtonGroup, ToggleButton,
+  Skeleton, Alert, Button, ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
+import PredictDialog from '../components/home/PredictDialog';
 import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import LockIcon from '@mui/icons-material/Lock';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -233,110 +233,6 @@ function MatchCard({
         </Box>
       </CardContent>
     </Card>
-  );
-}
-
-function PredictDialog({
-  match,
-  existing,
-  open,
-  onClose,
-  onSaved,
-}: {
-  match: Match | null;
-  existing?: Prediction;
-  open: boolean;
-  onClose: () => void;
-  onSaved: (pred: Prediction) => void;
-}) {
-  const [home, setHome] = useState(existing?.predicted_home_score ?? 0);
-  const [away, setAway] = useState(existing?.predicted_away_score ?? 0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (existing) {
-      setHome(existing.predicted_home_score);
-      setAway(existing.predicted_away_score);
-    } else {
-      setHome(0);
-      setAway(0);
-    }
-    setError('');
-  }, [match, existing]);
-
-  const handleSave = async () => {
-    if (!match) return;
-    setLoading(true);
-    setError('');
-    try {
-      await api.post('/predictions', {
-        matchId: match.id,
-        predictedHomeScore: home,
-        predictedAwayScore: away,
-      });
-      onSaved({ match_id: match.id, predicted_home_score: home, predicted_away_score: away });
-      onClose();
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      setError(msg || 'Error al guardar');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!match) return null;
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Pronosticar partido</DialogTitle>
-      <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1, justifyContent: 'center' }}>
-          <Box sx={{ textAlign: 'center' }}>
-            {match.homeTeam.crest && (
-              <img src={match.homeTeam.crest} alt="" width={40} style={{ objectFit: 'contain' }} />
-            )}
-            <Typography variant="body2" fontWeight={600}>{match.homeTeam.tla}</Typography>
-            <TextField
-              type="number"
-              value={home}
-              onChange={(e) => setHome(Math.max(0, parseInt(e.target.value) || 0))}
-              inputProps={{ min: 0, max: 30, style: { textAlign: 'center', fontSize: 24, width: 60 } }}
-              sx={{ mt: 1 }}
-            />
-          </Box>
-          <Typography variant="h5" color="text.secondary" sx={{ mt: 3 }}>—</Typography>
-          <Box sx={{ textAlign: 'center' }}>
-            {match.awayTeam.crest && (
-              <img src={match.awayTeam.crest} alt="" width={40} style={{ objectFit: 'contain' }} />
-            )}
-            <Typography variant="body2" fontWeight={600}>{match.awayTeam.tla}</Typography>
-            <TextField
-              type="number"
-              value={away}
-              onChange={(e) => setAway(Math.max(0, parseInt(e.target.value) || 0))}
-              inputProps={{ min: 0, max: 30, style: { textAlign: 'center', fontSize: 24, width: 60 } }}
-              sx={{ mt: 1 }}
-            />
-          </Box>
-        </Box>
-        <Box sx={{ mt: 2, p: 1.5, bgcolor: 'background.default', borderRadius: 2 }}>
-          <Typography variant="caption" color="text.secondary" display="block" textAlign="center">
-            {'🎯'} Acierto de resultado: <strong>10 pts</strong>
-          </Typography>
-          <Typography variant="caption" color="text.secondary" display="block" textAlign="center">
-            {'⚡'} Marcador exacto: <strong>30 pts</strong>
-          </Typography>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave} disabled={loading}>
-          {loading ? 'Guardando...' : 'Guardar pronóstico'}
-        </Button>
-      </DialogActions>
-    </Dialog>
   );
 }
 
