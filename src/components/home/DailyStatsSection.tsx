@@ -60,6 +60,8 @@ export default function DailyStatsSection({ stats }: { stats: DailyStats | null 
               <Tooltip
                 key={group.key}
                 arrow
+                enterTouchDelay={0}
+                leaveTouchDelay={3000}
                 title={
                   <Box>
                     <Typography variant="caption" display="block" fontWeight={700} sx={{ mb: 0.5 }}>
