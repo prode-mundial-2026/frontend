@@ -236,13 +236,13 @@ export default function BracketPredictionPage() {
         <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
           <Box sx={{ display: 'flex', gap: { xs: 2, sm: 4 }, flexWrap: 'wrap' }}>
             <Typography variant="caption" color="text.secondary">
-              {'\u26BD'} Semifinalista correcto <strong style={{ color: '#42A5F5' }}>+50 pts</strong> c/u
+              {'\u26BD'} Semifinalista correcto <strong style={{ color: '#42A5F5' }}>+25 pts</strong> c/u
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {'🏆'} Finalista correcto <strong style={{ color: '#42A5F5' }}>+100 pts</strong> c/u
+              {'🏆'} Finalista correcto <strong style={{ color: '#42A5F5' }}>+50 pts</strong> c/u
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {'👑'} Campeón correcto <strong style={{ color: '#FFD600' }}>+200 pts</strong>
+              {'👑'} Campeón correcto <strong style={{ color: '#FFD600' }}>+50 pts</strong>
             </Typography>
           </Box>
         </CardContent>
