@@ -8,8 +8,9 @@ import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -30,6 +31,45 @@ export default function Layout() {
   const [newName, setNewName] = useState('');
   const [renameError, setRenameError] = useState('');
   const [renameLoading, setRenameLoading] = useState(false);
+  const [bracketReminderOpen, setBracketReminderOpen] = useState(false);
+  const [lastMatchday2Date, setLastMatchday2Date] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const sessionKey = `bracketReminderShown_${user.id}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    let cancelled = false;
+    Promise.all([
+      api.get('/bracket-predictions/my'),
+      api.get('/matches', { params: { matchday: 2 } }),
+    ]).then(([bracketRes, matchesRes]) => {
+      if (cancelled) return;
+      const hasPrediction = bracketRes.data.prediction !== null;
+      const locked = bracketRes.data.locked;
+      if (hasPrediction || locked) return;
+
+      const matches: { utcDate: string }[] = matchesRes.data.matches ?? [];
+      if (matches.length === 0) return;
+      const sorted = [...matches].sort(
+        (a, b) => new Date(b.utcDate).getTime() - new Date(a.utcDate).getTime()
+      );
+      setLastMatchday2Date(new Date(sorted[0].utcDate));
+      setBracketReminderOpen(true);
+    }).catch(() => { /* silenciar errores */ });
+
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const handleCloseReminder = () => {
+    if (user) sessionStorage.setItem(`bracketReminderShown_${user.id}`, '1');
+    setBracketReminderOpen(false);
+  };
+
+  const handleGoToBracket = () => {
+    handleCloseReminder();
+    navigate('/llaves');
+  };
 
   const currentTab = NAV_ITEMS.findIndex((item) => location.pathname.startsWith(item.path));
 
@@ -159,6 +199,44 @@ export default function Layout() {
             disabled={renameLoading || newName.trim().length < 3}
           >
             {renameLoading ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={bracketReminderOpen} onClose={handleCloseReminder} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EmojiEventsIcon color="warning" />
+          ¡Recordatorio: Pronóstico de Fase Final!
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 1 }}>
+            Todavía no seleccionaste tu pronóstico de la <strong>Fase Final</strong> (Semifinales, Finalistas y Campeón).
+          </Typography>
+          {lastMatchday2Date && (
+            <Typography variant="body2" color="text.secondary">
+              Tenés tiempo hasta el último partido de la Jornada 2:&nbsp;
+              <strong>
+                {lastMatchday2Date.toLocaleDateString('es-AR', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+                {' a las '}
+                {lastMatchday2Date.toLocaleTimeString('es-AR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZone: 'America/Argentina/Buenos_Aires',
+                })}
+                {' (hora Argentina)'}
+              </strong>
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseReminder}>Cerrar</Button>
+          <Button variant="contained" color="warning" onClick={handleGoToBracket}>
+            Ir a Llaves
           </Button>
         </DialogActions>
       </Dialog>

@@ -221,13 +221,13 @@ export default function BracketPredictionPage() {
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Elegí los 4 equipos que llegan a semifinales (tras dieciseisavos, octavos y cuartos), luego los 2 finalistas y el campeón.
-        Se bloquea cuando arranque la fase eliminatoria (dieciseisavos de final).
+        Se bloquea CUANDO TERMINEN TODOS LOS PARTIDOS DE LA JORNADA 2 DE FASE DE GRUPOS.
       </Typography>
 
       {/* Banner de bloqueo */}
       {locked && (
         <Alert severity="warning" icon={<LockIcon />} sx={{ mb: 2 }}>
-          La fase eliminatoria ya comenzó. Tu pronóstico está bloqueado.
+          La fase eliminatoria está demasiado próxima. Tu pronóstico está bloqueado.
         </Alert>
       )}
 
